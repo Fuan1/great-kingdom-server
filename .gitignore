@@ -1,0 +1,49 @@
+# 컴파일된 출력물
+/dist
+/node_modules
+
+# 로그
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# 테스트
+/coverage
+/.nyc_output
+
+# IDEs 및 편집기
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# 환경 변수
+.env
+.env.development
+.env.test
+.env.production
+.env.local
+
+# NestJS 로컬 설정
+nest-cli.local.json
+
+# 임시 파일들
+tmp/
+temp/ 
