@@ -16,7 +16,7 @@ async function bootstrap() {
   // API 접두사 설정
   app.setGlobalPrefix('api');
 
-  const port = process.env.PORT || 3001;
+  const port = process.env.PORT || 8080;
   await app.listen(port);
   logger.log(`Application is running on: http://localhost:${port}`);
 }

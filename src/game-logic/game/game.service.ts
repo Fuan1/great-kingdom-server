@@ -18,6 +18,10 @@ export class GameService {
     return gameId;
   }
 
+  getGameList(): string[] {
+    return Array.from(this.games.keys());
+  }
+
   getGame(gameId: string): Game | undefined {
     return this.games.get(gameId);
   }

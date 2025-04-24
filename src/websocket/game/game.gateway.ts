@@ -58,6 +58,20 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  @SubscribeMessage('getGameList')
+  getGameList(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
+    try {
+      this.logger.log(`getGameList 요청 받음: ${client.id}`);
+      const gameList = this.gameService.getGameList();
+      this.logger.log(`게임 목록 반환: ${JSON.stringify(gameList)}`);
+
+      return { event: 'gameList', data: { gameList } };
+    } catch (error) {
+      this.logger.error(`Error getting game list: ${error.message}`);
+      return { event: 'error', data: { message: 'Failed to get game list' } };
+    }
+  }
+
   @SubscribeMessage('joinGame')
   joinGame(
     @ConnectedSocket() client: Socket,
