@@ -8,17 +8,19 @@ export interface GameMove {
   playerId: string;
 }
 
-export interface GameState {
-  board: number[][];
-  currentPlayer: string;
-  players: string[];
-  gameOver: boolean;
-  winner: string | null;
-}
+export type Player = {
+  id: string;
+  color: ColorType | null;
+};
 
-export interface GameOptions {
-  boardSize: number;
-  playerLimit: number;
+export interface GameState {
+  gameId: string;
+  board: CellState[][];
+  currentPlayer: Player;
+  players: Player[];
+  gameOver: boolean;
+  gameIndex: number;
+  winner: string | null;
 }
 
 export enum GameEventType {
@@ -30,9 +32,43 @@ export enum GameEventType {
   ERROR = 'error',
 }
 
+export enum GameOptions {
+  BOARD_SIZE = 11,
+  PLAYER_LIMIT = 2,
+}
+
+export enum ColorType {
+  BLACK = 'black',
+  WHITE = 'white',
+  NEUTRALITY = 'neutrality',
+}
+
+export enum BorderType {
+  TOP = 'top',
+  RIGHT = 'right',
+  BOTTOM = 'bottom',
+  LEFT = 'left',
+}
+export type StoneType = null | ColorType;
+export type TerritoryType = null | ColorType;
+export type Border = null | BorderType;
+export type CellState = {
+  stone: StoneType;
+  territory: TerritoryType;
+  border: Border;
+  visited: boolean;
+};
+
 export interface GameEvent {
   type: GameEventType;
   payload: any;
   timestamp: number;
   playerId?: string;
+}
+
+export interface searchResult {
+  meetBorder: boolean[];
+  meetColor: boolean;
+  blankCount: number;
+  opponentColorCount: number;
 }

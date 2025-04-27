@@ -1,0 +1,17 @@
+{
+  "files.exclude": {
+    "**/**.module.ts": true,
+    "**/**.spec.ts": true,
+    ".pretierrc": true,
+    "tsconfig.json": true,
+    "tsconfig.node.json": true,
+    "tsconfig.app.json": true,
+    "tsconfig.build.json": true,
+    "tsconfig.eslint.json": true,
+    "eslint.config.mjs": true,
+    "nest-cli.json": true,
+    "**/test": true,
+    "README.md": true
+  },
+  "explorer.excludeGitIgnore": false
+}
