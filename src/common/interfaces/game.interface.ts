@@ -5,13 +5,38 @@ export interface Position {
 
 export interface GameMove {
   position: Position;
-  playerId: string;
+  userId: string;
 }
 
 export type Player = {
   id: string;
   color: ColorType | null;
+  time: number;
 };
+
+export enum GameEventType {
+  JOIN = 'join',
+  LEAVE = 'leave',
+  MOVE = 'move',
+  GAME_OVER = 'game_over',
+  CHAT = 'chat',
+  ERROR = 'error',
+  TIME_UPDATE = 'time_update',
+}
+
+export interface GameEvent {
+  type: GameEventType;
+  payload: any;
+  timestamp: number;
+  playerId?: string;
+}
+
+export enum GameOptions {
+  BOARD_SIZE = 11,
+  PLAYER_LIMIT = 2,
+  DEFAULT_TIME = 5 * 60 * 1000,
+  BONUS_TIME = 2 * 1000,
+}
 
 export interface GameState {
   gameId: string;
@@ -21,20 +46,7 @@ export interface GameState {
   gameOver: boolean;
   gameIndex: number;
   winner: string | null;
-}
-
-export enum GameEventType {
-  JOIN = 'join',
-  LEAVE = 'leave',
-  MOVE = 'move',
-  GAME_OVER = 'game_over',
-  CHAT = 'chat',
-  ERROR = 'error',
-}
-
-export enum GameOptions {
-  BOARD_SIZE = 11,
-  PLAYER_LIMIT = 2,
+  timer: number;
 }
 
 export enum ColorType {
@@ -58,13 +70,6 @@ export type CellState = {
   border: Border;
   visited: boolean;
 };
-
-export interface GameEvent {
-  type: GameEventType;
-  payload: any;
-  timestamp: number;
-  playerId?: string;
-}
 
 export interface searchResult {
   meetBorder: boolean[];

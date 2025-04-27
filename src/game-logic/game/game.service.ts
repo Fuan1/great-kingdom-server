@@ -57,4 +57,18 @@ export class GameService {
   deleteGame(gameId: string): boolean {
     return this.games.delete(gameId);
   }
+
+  updateGameTime(
+    gameId: string,
+  ): { gameState: GameState; timeRemaining: number } | null {
+    const game = this.games.get(gameId);
+    if (!game) {
+      return null;
+    }
+    return game.updateTime();
+  }
+
+  handleTimeOut(gameId: string) {
+    return null;
+  }
 }

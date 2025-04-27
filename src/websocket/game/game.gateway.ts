@@ -6,6 +6,7 @@ import {
   OnGatewayDisconnect,
   ConnectedSocket,
   MessageBody,
+  OnGatewayInit,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameService } from '../../game-logic/game/game.service';
@@ -21,14 +22,44 @@ import { Logger } from '@nestjs/common';
     origin: '*',
   },
 })
-export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class GameGateway
+  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
+{
   private readonly logger = new Logger(GameGateway.name);
   private playerGameMap: Map<string, string> = new Map();
+  private activeGames: Set<string> = new Set();
+  private timeInterval: NodeJS.Timeout;
 
   @WebSocketServer()
   server: Server;
 
   constructor(private readonly gameService: GameService) {}
+
+  afterInit(server: any) {
+    this.timeInterval = setInterval(() => {
+      this.updateGameTime();
+    }, 1000);
+
+    this.logger.log('Game timer started');
+  }
+
+  private updateGameTime() {
+    this.activeGames.forEach((gameId) => {
+      try {
+        const timeUpdate = this.gameService.updateGameTime(gameId);
+        if (!timeUpdate) return;
+        const { gameState, timeRemaining } = timeUpdate;
+        this.server.to(gameId).emit('gameEvent', {
+          type: GameEventType.TIME_UPDATE,
+          payload: { timeUpdate },
+          timestamp: Date.now(),
+        });
+        // if (timeRemaining <= 0)
+      } catch (error) {
+        this.logger.error(`Error updating game time for ${gameId}: ${error}`);
+      }
+    });
+  }
 
   // 게임 중에 소켓 연결 해제 된 경우 다시 접속 가능해야 함
   // 연결 해제 1분이 지난 경우 게임이 종료되어야 함 (time loss)
@@ -49,7 +80,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   createGame(@ConnectedSocket() client: Socket) {
     try {
       const gameId = this.gameService.createGame();
+
       client.join(gameId);
+
+      this.activeGames.add(gameId);
+
       this.logger.log(`Game created: ${gameId} by player: ${client.id}`);
 
       return { event: 'gameCreated', data: { gameId } };
@@ -62,10 +97,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('getGameList')
   getGameList(@ConnectedSocket() client: Socket) {
     try {
-      this.logger.log(`getGameList 요청 받음: ${client.id}`);
       const gameList = this.gameService.getGameList();
-      this.logger.log(`게임 목록 반환: ${JSON.stringify(gameList)}`);
-
       return { event: 'gameList', data: { gameList } };
     } catch (error) {
       this.logger.error(`Error getting game list: ${error.message}`);
@@ -76,23 +108,21 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('joinGame')
   joinGame(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { gameId: string },
+    @MessageBody() data: { gameId: string; userId: string },
   ) {
     try {
-      const { gameId } = data;
-      const result = this.gameService.joinGame(gameId, client.id);
+      const { gameId, userId } = data;
+      const result = this.gameService.joinGame(gameId, userId);
 
       if (result) {
         client.join(gameId);
         this.playerGameMap.set(client.id, gameId);
 
-        // 현재 게임 상태 가져오기
         const gameState = this.gameService.getGameState(gameId);
         if (!gameState) {
           return { event: 'error', data: { message: 'Game not found' } };
         }
 
-        // 게임 이벤트 브로드캐스트
         this.server.to(gameId).emit('gameEvent', {
           type: GameEventType.JOIN,
           payload: {
@@ -159,14 +189,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const { gameId, move } = data;
 
-      move.playerId = client.id;
-
       const result = this.gameService.makeMove(gameId, move);
 
       if (result) {
         const gameState = this.gameService.getGameState(gameId);
         if (!gameState) {
           return { event: 'error', data: { message: 'Game not found' } };
+        }
+
+        if (gameState.gameOver) {
+          this.activeGames.delete(gameId);
         }
 
         this.server.to(gameId).emit('gameEvent', {
@@ -178,7 +210,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
             gameState,
           },
           timestamp: Date.now(),
-          playerId: client.id,
+          playerId: move.userId,
         });
 
         return { event: 'moveMade', data: { move, gameState } };
@@ -188,6 +220,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch (error) {
       this.logger.error(`Error making move: ${error.message}`);
       return { event: 'error', data: { message: 'Failed to make move' } };
+    }
+  }
+
+  onModuleDestroy() {
+    if (this.timeInterval) {
+      clearInterval(this.timeInterval);
     }
   }
 }
