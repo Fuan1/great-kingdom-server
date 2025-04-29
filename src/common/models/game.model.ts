@@ -5,9 +5,8 @@ import {
   CellState,
   ColorType,
   BorderType,
-  searchResult,
+  SearchResult,
 } from '../interfaces/game.interface';
-
 export class Game {
   private id: string;
   private state: GameState;
@@ -48,6 +47,12 @@ export class Game {
         id: '',
         color: null,
         time: 0,
+        name: '',
+        email: '',
+        rating: 0,
+        profileImage: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       players: [],
       gameOver: false,
@@ -104,6 +109,12 @@ export class Game {
         id: userId,
         color: ColorType.BLACK,
         time: GameOptions.DEFAULT_TIME,
+        name: '',
+        email: '',
+        rating: 0,
+        profileImage: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
       this.state.currentPlayer.id = userId;
       this.state.currentPlayer.color = ColorType.BLACK;
@@ -113,8 +124,16 @@ export class Game {
         id: userId,
         color: ColorType.WHITE,
         time: GameOptions.DEFAULT_TIME,
+        name: '',
+        email: '',
+        rating: 0,
+        profileImage: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
     }
+
+    console.log('addPlayer', this.state.players);
 
     return true;
   }
@@ -141,15 +160,19 @@ export class Game {
     if (this.state.gameOver === true) {
       return false;
     }
+    console.log('isValidMove - pass gameOver');
     if (this.state.board[x][y].stone !== null) {
       return false;
     }
+    console.log('isValidMove - pass stone');
     if (this.state.board[x][y].territory !== null) {
       return false;
     }
+    console.log('isValidMove - pass territory');
     if (this.state.currentPlayer.id !== userId) {
       return false;
     }
+    console.log('isValidMove - pass id');
 
     return true;
   }
@@ -158,6 +181,7 @@ export class Game {
     const { position, userId } = move;
     const { x, y } = position;
 
+    console.log('makeMove', x, y, userId);
     if (!this.isValidMove(x, y, userId)) {
       return false;
     }
@@ -193,7 +217,7 @@ export class Game {
     row: number,
     col: number,
     color: ColorType,
-    result: searchResult,
+    result: SearchResult,
   ) {
     if (board[row][col].territory !== null) return;
 
@@ -203,16 +227,16 @@ export class Game {
 
     if (board[row][col].border !== null) {
       if (board[row][col].border === BorderType.TOP) {
-        result.meetBorder[0] = true;
+        result.borderEncountered[0] = true;
       }
       if (board[row][col].border === BorderType.RIGHT) {
-        result.meetBorder[1] = true;
+        result.borderEncountered[1] = true;
       }
       if (board[row][col].border === BorderType.BOTTOM) {
-        result.meetBorder[2] = true;
+        result.borderEncountered[2] = true;
       }
       if (board[row][col].border === BorderType.LEFT) {
-        result.meetBorder[3] = true;
+        result.borderEncountered[3] = true;
       }
       return;
     }
@@ -220,10 +244,10 @@ export class Game {
     if (board[row][col].visited) return;
 
     if (board[row][col].stone !== null && board[row][col].stone !== color) {
-      result.meetColor = true;
-      result.opponentColorCount++;
+      result.sameColorFound = true;
+      result.opponentStoneCount++;
     } else {
-      result.blankCount++;
+      result.emptySpaceCount++;
     }
 
     board[row][col].visited = true;
@@ -234,26 +258,26 @@ export class Game {
     this.searchTerritory(board, row, col + 1, color, result);
   }
 
-  private initSearchResult(): searchResult {
+  private initSearchResult(): SearchResult {
     return {
-      meetBorder: [false, false, false, false],
-      meetColor: false,
-      blankCount: 0,
-      opponentColorCount: 0,
+      borderEncountered: [false, false, false, false],
+      sameColorFound: false,
+      emptySpaceCount: 0,
+      opponentStoneCount: 0,
     };
   }
 
   private checkTerritory(
     board: CellState[][],
-    result: searchResult,
+    result: SearchResult,
     currentPlayer: ColorType,
   ) {
     if (
-      (result.meetBorder[0] &&
-        result.meetBorder[1] &&
-        result.meetBorder[2] &&
-        result.meetBorder[3]) ||
-      result.meetColor
+      (result.borderEncountered[0] &&
+        result.borderEncountered[1] &&
+        result.borderEncountered[2] &&
+        result.borderEncountered[3]) ||
+      result.sameColorFound
     ) {
       for (let i = 0; i < 11; i++) {
         for (let j = 0; j < 11; j++) {
@@ -274,8 +298,8 @@ export class Game {
     }
   }
 
-  private checkCapture(result: searchResult) {
-    if (result.opponentColorCount > 0 && result.blankCount === 0) {
+  private checkCapture(result: SearchResult) {
+    if (result.opponentStoneCount > 0 && result.emptySpaceCount === 0) {
       return true;
     }
     return false;
@@ -327,7 +351,7 @@ export class Game {
     }
 
     const newBoard = JSON.parse(JSON.stringify(this.state.board));
-    var result: searchResult = this.initSearchResult();
+    var result: SearchResult = this.initSearchResult();
 
     const color: ColorType = this.state.currentPlayer.color;
 

@@ -1,18 +1,4 @@
-export interface Position {
-  x: number;
-  y: number;
-}
-
-export interface GameMove {
-  position: Position;
-  userId: string;
-}
-
-export type Player = {
-  id: string;
-  color: ColorType | null;
-  time: number;
-};
+import { User } from './user.interface';
 
 export enum GameEventType {
   JOIN = 'join',
@@ -24,29 +10,11 @@ export enum GameEventType {
   TIME_UPDATE = 'time_update',
 }
 
-export interface GameEvent {
-  type: GameEventType;
-  payload: any;
-  timestamp: number;
-  playerId?: string;
-}
-
 export enum GameOptions {
   BOARD_SIZE = 11,
   PLAYER_LIMIT = 2,
   DEFAULT_TIME = 5 * 60 * 1000,
   BONUS_TIME = 2 * 1000,
-}
-
-export interface GameState {
-  gameId: string;
-  board: CellState[][];
-  currentPlayer: Player;
-  players: Player[];
-  gameOver: boolean;
-  gameIndex: number;
-  winner: string | null;
-  timer: number;
 }
 
 export enum ColorType {
@@ -61,6 +29,7 @@ export enum BorderType {
   BOTTOM = 'bottom',
   LEFT = 'left',
 }
+
 export type StoneType = null | ColorType;
 export type TerritoryType = null | ColorType;
 export type Border = null | BorderType;
@@ -71,9 +40,42 @@ export type CellState = {
   visited: boolean;
 };
 
-export interface searchResult {
-  meetBorder: boolean[];
-  meetColor: boolean;
-  blankCount: number;
-  opponentColorCount: number;
+export interface SearchResult {
+  borderEncountered: boolean[];
+  sameColorFound: boolean;
+  emptySpaceCount: number;
+  opponentStoneCount: number;
+}
+
+export interface Player extends User {
+  color: ColorType | null;
+  time: number;
+}
+
+export interface GameState {
+  gameId: string;
+  board: CellState[][];
+  currentPlayer: Player;
+  players: Player[];
+  gameOver: boolean;
+  gameIndex: number;
+  winner: string | null;
+  timer: number;
+}
+
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export interface GameMove {
+  position: Position;
+  userId: string;
+}
+
+export interface GameEvent {
+  type: GameEventType;
+  payload: any;
+  timestamp: number;
+  playerId?: string;
 }

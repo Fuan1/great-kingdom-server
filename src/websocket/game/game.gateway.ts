@@ -70,10 +70,10 @@ export class GameGateway
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
-    const gameId = this.playerGameMap.get(client.id);
-    if (gameId) {
-      this.leaveGame(client, { gameId });
-    }
+    // const gameId = this.playerGameMap.get(client.id);
+    // if (gameId) {
+    //   this.leaveGame(client, { gameId });
+    // }
   }
 
   @SubscribeMessage('createGame')
@@ -187,6 +187,7 @@ export class GameGateway
     @MessageBody() data: { gameId: string; move: GameMove },
   ) {
     try {
+      this.logger.log('makeMove', data);
       const { gameId, move } = data;
 
       const result = this.gameService.makeMove(gameId, move);

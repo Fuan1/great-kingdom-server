@@ -1,6 +1,5 @@
 {
   "files.exclude": {
-    "**/**.module.ts": true,
     "**/**.spec.ts": true,
     ".pretierrc": true,
     "tsconfig.json": true,
