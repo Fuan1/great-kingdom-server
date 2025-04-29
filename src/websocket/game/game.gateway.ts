@@ -9,12 +9,9 @@ import {
   OnGatewayInit,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { GameService } from '../../game-logic/game/game.service';
-import {
-  GameEventType,
-  GameMove,
-  GameOptions,
-} from '../../common/interfaces/game.interface';
+import { GameService } from '../../game-logic/game-logic.service';
+import { GameMove } from '../../common/interfaces/game.interface';
+import { GameEventType } from './types';
 import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Game } from '../../common/models/game.model';
-import { GameMove, GameState } from '../../common/interfaces/game.interface';
+import { Game } from '../common/models/game.model';
+import { GameMove, GameState } from '../common/interfaces/game.interface';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()

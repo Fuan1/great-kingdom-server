@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { GameService } from './game/game.service';
+import { GameService } from './game-logic.service';
 
 @Module({
   providers: [GameService],

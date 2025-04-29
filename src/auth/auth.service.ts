@@ -52,6 +52,9 @@ export class AuthService {
         name: userData.name,
         googleId: userData.googleId,
         picture: userData.picture,
+        rating: 1200,
+        wins: 0,
+        losses: 0,
       },
     });
 

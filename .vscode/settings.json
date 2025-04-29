@@ -10,7 +10,7 @@
     "eslint.config.mjs": true,
     "nest-cli.json": true,
     "**/test": true,
-    "README.md": true
+    "prisma/migrations": true
   },
   "explorer.excludeGitIgnore": false
 }
