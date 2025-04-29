@@ -1,15 +1,5 @@
 import { User } from './user.interface';
 
-export enum GameEventType {
-  JOIN = 'join',
-  LEAVE = 'leave',
-  MOVE = 'move',
-  GAME_OVER = 'game_over',
-  CHAT = 'chat',
-  ERROR = 'error',
-  TIME_UPDATE = 'time_update',
-}
-
 export enum GameOptions {
   BOARD_SIZE = 11,
   PLAYER_LIMIT = 2,
@@ -71,11 +61,4 @@ export interface Position {
 export interface GameMove {
   position: Position;
   userId: string;
-}
-
-export interface GameEvent {
-  type: GameEventType;
-  payload: any;
-  timestamp: number;
-  playerId?: string;
 }
