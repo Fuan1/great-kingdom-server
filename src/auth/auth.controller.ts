@@ -6,48 +6,71 @@ import {
   UnauthorizedException,
   HttpStatus,
   HttpCode,
+  Get,
+  UseGuards,
+  Request,
+  Headers,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { GoogleTokenVerifyDto, AuthResponseDto } from './dto';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { GoogleAuthCodeDto, TokenResponseDto, AuthResponseDto } from './dto';
+import { JwtAuthGuard } from './guard/jwt-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('google/verify')
+  @Post('google/callback')
+  @ApiOperation({ summary: 'Process Google OAuth authorization code' })
+  @ApiResponse({
+    status: 200,
+    description: 'Authentication successful',
+    type: TokenResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Authentication failed' })
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify Google token and create/update user' })
-  @ApiResponse({ status: 200, description: 'Token verified successfully' })
-  @ApiResponse({ status: 401, description: 'Invalid Google token' })
-  async verifyGoogleToken(
-    @Body() body: GoogleTokenVerifyDto,
-  ): Promise<AuthResponseDto> {
+  async googleCallback(
+    @Body() googleAuthCodeDto: GoogleAuthCodeDto,
+  ): Promise<TokenResponseDto> {
     try {
-      const googleUser = await this.authService.verifyGoogleToken(body.idToken);
-
-      const user = await this.authService.findOrCreateUser({
-        email: googleUser.email,
-        name: `${googleUser.given_name} ${googleUser.family_name}`,
-        googleId: googleUser.sub,
-        picture: googleUser.picture,
-      });
-
-      const { accessToken, expiresIn } =
-        await this.authService.generateToken(user);
-
-      return {
-        accessToken,
-        expiresIn,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name || '',
-        },
-      };
+      return await this.authService.googleLogin(googleAuthCodeDto.code);
     } catch (error) {
-      throw new UnauthorizedException('Invalid Google token');
+      throw new UnauthorizedException('Failed to authenticate with Google');
     }
+  }
+
+  @Get('verify')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Verify token validity' })
+  @ApiResponse({
+    status: 200,
+    description: 'Valid token',
+    type: AuthResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Invalid token' })
+  async verifyToken(@Request() req) {
+    return {
+      id: req.user.id,
+      email: req.user.email,
+      name: req.user.name,
+      picture: req.user.picture,
+    };
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Logout' })
+  @ApiResponse({ status: 200, description: 'Logout successful' })
+  @HttpCode(HttpStatus.OK)
+  async logout() {
+    return await this.authService.logout();
   }
 }

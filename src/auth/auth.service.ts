@@ -1,82 +1,112 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
-import { OAuth2Client } from 'google-auth-library';
 import { User } from '@prisma/client';
-import { GooglePayloadDto, CreateUserDto, TokenResponseDto } from './dto';
+import { CreateUserDto, TokenResponseDto } from './dto';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Injectable()
 export class AuthService {
-  private googleClient: OAuth2Client;
-
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-    private readonly prisma: PrismaService,
-  ) {
-    this.googleClient = new OAuth2Client(
-      this.configService.get('GOOGLE_CLIENT_ID'),
-    );
-  }
+    private readonly googleStrategy: GoogleStrategy,
+  ) {}
 
-  async verifyGoogleToken(idToken: string): Promise<GooglePayloadDto> {
+  async googleLogin(code: string): Promise<TokenResponseDto> {
     try {
-      const ticket = await this.googleClient.verifyIdToken({
-        idToken,
-        audience: this.configService.get('GOOGLE_CLIENT_ID'),
+      // 1. Get tokens from authorization code
+      const tokens = await this.googleStrategy.getTokens(code);
+
+      // 2. Get user info using access token
+      if (!tokens.access_token) {
+        throw new UnauthorizedException('Access token not found');
+      }
+      const userInfo = await this.googleStrategy.getUserInfo(
+        tokens.access_token,
+      );
+
+      // 3. Save or update user information in DB
+      const user = await this.findOrCreateUser({
+        email: userInfo.email,
+        name: userInfo.name,
+        picture: userInfo.picture,
+        googleId: userInfo.sub,
       });
 
-      const payload = ticket.getPayload() as GooglePayloadDto | undefined;
+      // 4. Generate JWT token
+      const jwtToken = this.generateToken(user);
 
-      if (!payload) {
-        throw new Error('Invalid payload');
-      }
+      // Token expiration time (24 hours)
+      const expiresIn = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-      return payload;
+      return {
+        accessToken: jwtToken,
+        expiresIn: expiresIn,
+      };
     } catch (error) {
-      throw new UnauthorizedException('Invalid Google token');
+      throw new UnauthorizedException('Failed to authenticate with Google');
     }
   }
 
   async findOrCreateUser(userData: CreateUserDto): Promise<User> {
-    const user = await this.prisma.user.upsert({
+    let user = await this.prismaService.user.findUnique({
       where: { email: userData.email },
-      update: {
-        name: userData.name,
-        googleId: userData.googleId,
-        picture: userData.picture,
-      },
-      create: {
-        email: userData.email,
-        name: userData.name,
-        googleId: userData.googleId,
-        picture: userData.picture,
-        rating: 1200,
-        wins: 0,
-        losses: 0,
-      },
     });
+
+    if (!user) {
+      user = await this.prismaService.user.create({
+        data: userData,
+      });
+    } else {
+      // Update existing user information
+      user = await this.prismaService.user.update({
+        where: { id: user.id },
+        data: {
+          name: userData.name,
+          picture: userData.picture,
+          googleId: userData.googleId,
+        },
+      });
+    }
 
     return user;
   }
 
-  async generateToken(user: User): Promise<TokenResponseDto> {
-    const expiresIn = 60 * 60 * 24; // 24시간
-
-    const accessToken = this.jwtService.sign(
-      {
-        sub: user.id,
-        email: user.email,
-      },
-      {
-        expiresIn,
-      },
-    );
-
-    return {
-      accessToken,
-      expiresIn: expiresIn * 1000, // milliseconds로 변환
+  generateToken(user: User): string {
+    const payload = {
+      sub: user.id,
+      email: user.email,
     };
+    return this.jwtService.sign(payload);
+  }
+
+  // async verifyToken(token: string) {
+  //   try {
+  //     const payload = this.jwtService.verify(token);
+  //     const user = await this.prismaService.user.findUnique({
+  //       where: { id: payload.sub },
+  //     });
+
+  //     if (!user) {
+  //       throw new UnauthorizedException('User not found');
+  //     }
+
+  //     return {
+  //       id: user.id,
+  //       email: user.email,
+  //       name: user.name,
+  //       picture: user.picture,
+  //     };
+  //   } catch (error) {
+  //     throw new UnauthorizedException('Invalid token');
+  //   }
+  // }
+
+  // Logout handling (token blacklist processing and other logic can be added)
+  async logout() {
+    // Here we just return a simple success message
+    // as we use client-side token deletion
+    return { success: true };
   }
 }

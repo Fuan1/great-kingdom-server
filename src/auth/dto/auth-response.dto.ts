@@ -9,15 +9,15 @@ export class UserDto {
 
   @ApiProperty({ description: 'User name' })
   name: string;
+
+  @ApiProperty({ description: 'User profile picture URL', required: false })
+  picture?: string;
 }
 
 export class AuthResponseDto {
-  @ApiProperty({ description: 'JWT access token' })
-  accessToken: string;
-
   @ApiProperty({ description: 'User information' })
   user: UserDto;
 
-  @ApiProperty({ description: 'Token expiration time in milliseconds' })
-  expiresIn: number;
+  @ApiProperty({ description: 'True if user is authenticated', default: true })
+  isAuthenticated: boolean = true;
 }
