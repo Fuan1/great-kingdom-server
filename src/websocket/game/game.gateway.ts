@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameService } from '../../game-logic/game-logic.service';
-import { GameMove } from '../../common/interfaces/game.interface';
+import { GameMove } from '../../game-logic/interface/game.interface';
 import { GameEventType } from './types';
 import { Logger } from '@nestjs/common';
 
@@ -67,10 +67,10 @@ export class GameGateway
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
-    // const gameId = this.playerGameMap.get(client.id);
-    // if (gameId) {
-    //   this.leaveGame(client, { gameId });
-    // }
+    const gameId = this.playerGameMap.get(client.id);
+    if (gameId) {
+      this.leaveGame(client, { gameId });
+    }
   }
 
   @SubscribeMessage('createGame')

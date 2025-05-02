@@ -1,6 +1,8 @@
 {
   "files.exclude": {
     "**/**.spec.ts": true,
+    "**/dist": true,
+    "**/node_modules": true,
     ".pretierrc": true,
     "tsconfig.json": true,
     "tsconfig.node.json": true,
@@ -10,6 +12,9 @@
     "eslint.config.mjs": true,
     "nest-cli.json": true,
     "**/test": true,
+    ".gitignore": true,
+    ".prettierrc": true,
+    "package-lock.json": true,
     "prisma/migrations": true
   },
   "explorer.excludeGitIgnore": false

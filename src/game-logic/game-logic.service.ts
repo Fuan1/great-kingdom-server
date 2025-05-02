@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Game } from '../common/models/game.model';
-import { GameMove, GameState } from '../common/interfaces/game.interface';
+import { GameMove, GameState } from './interface/game.interface';
+import { Game } from './services/game-core.service';
 import { v4 as uuidv4 } from 'uuid';
+import { GamePlay } from './services/game-play.service';
 
 @Injectable()
 export class GameService {
@@ -14,12 +15,24 @@ export class GameService {
     return gameId;
   }
 
+  getGame(gameId: string): Game | undefined {
+    return this.games.get(gameId);
+  }
+
+  deleteGame(gameId: string): boolean {
+    return this.games.delete(gameId);
+  }
+
   getGameList(): string[] {
     return Array.from(this.games.keys());
   }
 
-  getGame(gameId: string): Game | undefined {
-    return this.games.get(gameId);
+  getGameState(gameId: string): GameState | null {
+    const game = this.games.get(gameId);
+    if (!game) {
+      return null;
+    }
+    return game.getState();
   }
 
   joinGame(gameId: string, playerId: string): boolean {
@@ -27,7 +40,12 @@ export class GameService {
     if (!game) {
       return false;
     }
-    return game.addPlayer(playerId);
+    return game.addPlayer(
+      playerId,
+      'Test User',
+      1200,
+      'https://example.com/image.png',
+    );
   }
 
   leaveGame(gameId: string, playerId: string): boolean {
@@ -40,22 +58,9 @@ export class GameService {
 
   makeMove(gameId: string, move: GameMove): boolean {
     const game = this.games.get(gameId);
-    if (!game) {
-      return false;
-    }
-    return game.makeMove(move);
-  }
+    if (!game) return false;
 
-  getGameState(gameId: string): GameState | null {
-    const game = this.games.get(gameId);
-    if (!game) {
-      return null;
-    }
-    return game.getState();
-  }
-
-  deleteGame(gameId: string): boolean {
-    return this.games.delete(gameId);
+    return GamePlay.makeMove(game.getState(), move);
   }
 
   updateGameTime(
@@ -65,7 +70,8 @@ export class GameService {
     if (!game) {
       return null;
     }
-    return game.updateTime();
+
+    return GamePlay.updateTime(game.getState());
   }
 
   handleTimeOut(gameId: string) {

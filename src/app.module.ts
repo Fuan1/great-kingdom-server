@@ -8,7 +8,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env.local',
+      envFilePath: '.env',
       isGlobal: true,
     }),
     PrismaModule, // 전역으로 사용할 PrismaModule
