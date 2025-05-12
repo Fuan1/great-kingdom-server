@@ -1,0 +1,58 @@
+# Task ID: 7
+# Title: Implement Matchmaking System with ELO Rating
+# Status: pending
+# Dependencies: 2, 4
+# Priority: medium
+# Description: Create a matchmaking system that pairs players based on their ELO ratings and manages the queue of players waiting for matches.
+# Details:
+1. Create MatchmakingService:
+```typescript
+@Injectable()
+export class MatchmakingService {
+  private queue: Map<string, {
+    userId: number,
+    rating: number,
+    joinTime: Date
+  }> = new Map();
+  
+  // Add player to queue
+  addToQueue(userId: number, rating: number): void { }
+  
+  // Remove player from queue
+  removeFromQueue(userId: number): void { }
+  
+  // Find match for player
+  findMatch(userId: number): { matchedUserId: number } | null { }
+  
+  // Process queue to create matches
+  processQueue(): void { }
+}
+```
+2. Implement ELO rating system:
+```typescript
+@Injectable()
+export class RatingService {
+  // Calculate new ratings after a game
+  calculateNewRatings(winnerRating: number, loserRating: number): {
+    newWinnerRating: number,
+    newLoserRating: number
+  } { }
+}
+```
+3. Create WebSocket events for matchmaking:
+   - `joinQueue` - Add player to matchmaking queue
+   - `leaveQueue` - Remove player from queue
+   - `matchFound` - Notify players of match
+4. Implement match acceptance/rejection flow
+5. Create rating adjustment after game completion
+6. Store rating history in database
+7. Implement queue timeout handling
+
+# Test Strategy:
+1. Test adding and removing players from queue
+2. Verify matchmaking algorithm pairs players with similar ratings
+3. Test ELO rating calculations with various scenarios
+4. Verify match acceptance flow works correctly
+5. Test rating adjustments after game completion
+6. Verify queue timeout handling
+7. Test concurrent queue operations

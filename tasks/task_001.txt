@@ -1,0 +1,30 @@
+# Task ID: 1
+# Title: Setup NestJS Project with Required Dependencies
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Initialize a NestJS project with TypeScript and configure all required dependencies including Socket.IO, PostgreSQL, Redis, and Google OAuth.
+# Details:
+1. Create a new NestJS project using the CLI: `nest new go-game-server`
+2. Install required dependencies:
+   - `npm install @nestjs/websockets socket.io`
+   - `npm install @nestjs/typeorm typeorm pg`
+   - `npm install @nestjs/config`
+   - `npm install @nestjs/passport passport passport-google-oauth20`
+   - `npm install redis ioredis`
+3. Configure environment variables for database connections, Redis, and Google OAuth credentials
+4. Setup basic project structure with modules for:
+   - Authentication
+   - Game
+   - User
+   - WebSocket
+   - Database
+5. Configure TypeORM for PostgreSQL connection
+6. Setup Redis connection service
+
+# Test Strategy:
+1. Verify all dependencies install correctly
+2. Test database connection to PostgreSQL
+3. Test Redis connection
+4. Ensure environment variables are properly loaded
+5. Run basic health check endpoints to verify server starts correctly

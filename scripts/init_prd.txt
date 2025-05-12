@@ -1,0 +1,88 @@
+<context>
+# Overview  
+[I am planning to implement a WebSocket server that provides a game similar to Go. This will be an easy entry point for learning the basic concepts of Go. The basic description of the game is as follows:
+Two players alternately place stones on a 9 * 9 grid.
+Similar to Go, if a player creates a territory, the opponent cannot place stones in that area.
+The player who captures at least one of the opponent's stones wins.
+If a player cannot place a stone or both players request to count territories, the player with more territory wins.
+]
+
+# Core Features  
+[WebSocket implementation is required for creating, deleting, entering, leaving, and matching game rooms. Socket management should maintain connections even during page navigation or brief disconnections.
+The game must include a timer, and judgments such as timeout defeats or automatic losses after disconnections longer than 1 minute should be implemented.
+When a game ends, the system should remove the game room and determine the winner.
+The game processes must be recorded in the database.
+After a game ends, player ratings should be adjusted.
+Game matching is based on the ELO rating system.]
+
+# User Experience  
+[The user logs in (only Google login is supported).
+The user requests game matching.
+The user enjoys the game.]
+</context>
+<PRD>
+# Technical Architecture  
+[
+    backend
+    1. using nest.js
+    2. Socket.IO for WebSocket communications
+    3. postgresql for storing game records, user profiles, and ratings
+    4. Redis for managing active games and session state
+    Data Models
+    1. User: Google ID, nickname, rating, game history
+    2. Game: board state, player information, moves history, timestamps, result
+    3. Room: active players, spectators, game state, timer information
+    APIs and Integrations
+    1. Google OAuth2 for authentication
+    2. RESTful API for non-game functions (user profiles, game history)
+    3. WebSocket endpoints for real-time game interactions
+    Infrastructure
+    1. Cloud-based hosting (AWS) 
+    2. Monitoring for server health and game metrics
+]
+
+# Development Roadmap  
+[
+    MVP Requirements
+    1. Basic authentication with Google
+    2. Game board implementation with Go-like rules
+    3. WebSocket implementation for two-player games
+    4. Basic matchmaking functionality
+    5. Timer implementation and disconnect handling
+    6. Game result determination and rating adjustments
+    7. Simple UI for gameplay
+
+    Future Enhancements
+    1. Spectator mode for watching games
+    2. Game replay functionality
+    3. Advanced matchmaking with preferences
+    4. Friend system and direct challenges
+    5. Tournaments and special events
+    6. In-game chat functionality
+    7. Tutorial system for new players
+]
+
+# Logical Dependency Chain
+[   
+    1. Authentication system (foundation)
+    2. Basic WebSocket infrastructure for connections
+    3. Game board logic and rule implementation
+    4. User interface for game board and interactions
+    5. Matchmaking system
+    6. Rating system
+    7. Game history and statistics
+    8. Timer and disconnect handling
+    9. Enhanced user experience features
+]
+
+# Risks and Mitigations  
+[Identify potential risks and how they'll be addressed:
+- Technical challenges
+- Figuring out the MVP that we can build upon
+- Resource constraints]
+
+# Appendix  
+[Include any additional information:
+- Research findings
+- Technical specifications]
+</PRD>

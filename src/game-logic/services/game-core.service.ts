@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   BorderType,
   CellState,
@@ -5,7 +6,6 @@ import {
   GameOptions,
   GameState,
   StoneType,
-  TerritoryType,
 } from 'src/game-logic/interface/game.interface';
 
 export class Game {
@@ -54,7 +54,7 @@ export class Game {
       visited: false,
     };
 
-    console.log('[gameCore]-[initializeGameState]-[success]');
+    Logger.log('[gameCore]-[initializeGameState]-[success]');
 
     return {
       gameId: this.id,
@@ -111,7 +111,7 @@ export class Game {
       });
     }
 
-    console.log('[gameCore]-[addPlayer]-[success]', this.state.players);
+    Logger.log('[gameCore]-[addPlayer]-[success]', this.state.players);
 
     return true;
   }
@@ -121,18 +121,18 @@ export class Game {
       (player) => player.id === playerId,
     );
     if (index === -1) {
-      console.log('[gameCore]-[removePlayer]-[fail] not found player');
+      Logger.log('[gameCore]-[removePlayer]-[fail] not found player');
       return false;
     }
 
     this.state.players.splice(index, 1);
 
     if (this.state.players.length === 0) {
-      console.log('[gameCore]-[removePlayer]-[success] all players removed');
+      Logger.log('[gameCore]-[removePlayer]-[success] all players removed');
       this.state.gameOver = true;
     }
 
-    console.log('[gameCore]-[removePlayer]-[success]', playerId);
+    Logger.log('[gameCore]-[removePlayer]-[success]', playerId);
 
     return true;
   }

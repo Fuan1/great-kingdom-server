@@ -1,0 +1,50 @@
+# Task ID: 6
+# Title: Implement Game Timer and Disconnect Handling
+# Status: pending
+# Dependencies: 3, 4, 5
+# Priority: medium
+# Description: Create timer functionality for games and handle player disconnections with appropriate game state updates.
+# Details:
+1. Create TimerService to manage game timers:
+```typescript
+@Injectable()
+export class TimerService {
+  private timers: Map<string, {
+    playerTimers: { [playerId: string]: number },
+    interval: any,
+    currentPlayer: string
+  }> = new Map();
+  
+  // Start timer for a game
+  startTimer(roomId: string, players: string[], timeLimit: number): void { }
+  
+  // Switch active player
+  switchPlayer(roomId: string, nextPlayerId: string): void { }
+  
+  // Pause timer (for disconnections)
+  pauseTimer(roomId: string): void { }
+  
+  // Resume timer
+  resumeTimer(roomId: string): void { }
+  
+  // Stop and clear timer
+  clearTimer(roomId: string): void { }
+}
+```
+2. Implement disconnect handling in GameGateway:
+   - Store last connection time in Redis
+   - Check for reconnection within 1 minute
+   - Auto-forfeit game if disconnection exceeds 1 minute
+3. Create timeout detection and handling
+4. Implement timer events to notify clients of remaining time
+5. Create timer display data for frontend
+6. Handle game state updates on timeout or disconnect forfeit
+
+# Test Strategy:
+1. Test timer initialization and countdown
+2. Verify player switching updates timer correctly
+3. Test pause and resume functionality
+4. Verify timeout detection and handling
+5. Test disconnect handling with various scenarios
+6. Verify auto-forfeit after 1 minute disconnection
+7. Test concurrent timers for multiple games

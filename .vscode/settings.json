@@ -12,10 +12,15 @@
     "eslint.config.mjs": true,
     "nest-cli.json": true,
     "**/test": true,
-    ".gitignore": true,
     ".prettierrc": true,
     "package-lock.json": true,
-    "prisma/migrations": true
+    "prisma/migrations": true,
+    ".roomodes": true,
+    ".windsurfrules": true,
+    ".taskmasterconfig": true,
+    ".gitignore": true,
+    "**/.roo": true,
+    "**/.cursor": true
   },
   "explorer.excludeGitIgnore": false
 }

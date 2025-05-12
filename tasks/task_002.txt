@@ -1,0 +1,46 @@
+# Task ID: 2
+# Title: Implement Google OAuth Authentication
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Create authentication system using Google OAuth2 for user login and session management.
+# Details:
+1. Create AuthModule with Google OAuth strategy
+2. Implement AuthController with endpoints for:
+   - `/auth/google` - Initiates Google OAuth flow
+   - `/auth/google/callback` - Handles OAuth callback
+   - `/auth/logout` - Handles user logout
+3. Create UserEntity in TypeORM:
+```typescript
+@Entity('users')
+export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ unique: true })
+  googleId: string;
+
+  @Column()
+  nickname: string;
+
+  @Column({ default: 1000 })
+  rating: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+```
+4. Implement JWT token generation for authenticated sessions
+5. Create AuthGuard for protected routes
+6. Store user session data in Redis for persistence
+
+# Test Strategy:
+1. Test Google OAuth flow with mock Google responses
+2. Verify user creation in database for new users
+3. Test login flow for existing users
+4. Verify JWT token generation and validation
+5. Test session persistence in Redis
+6. Verify protected routes are properly guarded

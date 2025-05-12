@@ -46,4 +46,16 @@ nest-cli.local.json
 
 # 임시 파일들
 tmp/
-temp/ 
+temp/
+
+# Added by Claude Task Master
+# Logs
+dev-debug.log
+# Environment variables
+# Editor directories and files
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific

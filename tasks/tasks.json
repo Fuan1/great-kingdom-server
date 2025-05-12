@@ -1,0 +1,200 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Setup NestJS Project with Required Dependencies",
+      "description": "Initialize a NestJS project with TypeScript and configure all required dependencies including Socket.IO, PostgreSQL, Redis, and Google OAuth.",
+      "details": "1. Create a new NestJS project using the CLI: `nest new go-game-server`\n2. Install required dependencies:\n   - `npm install @nestjs/websockets socket.io`\n   - `npm install @nestjs/typeorm typeorm pg`\n   - `npm install @nestjs/config`\n   - `npm install @nestjs/passport passport passport-google-oauth20`\n   - `npm install redis ioredis`\n3. Configure environment variables for database connections, Redis, and Google OAuth credentials\n4. Setup basic project structure with modules for:\n   - Authentication\n   - Game\n   - User\n   - WebSocket\n   - Database\n5. Configure TypeORM for PostgreSQL connection\n6. Setup Redis connection service",
+      "testStrategy": "1. Verify all dependencies install correctly\n2. Test database connection to PostgreSQL\n3. Test Redis connection\n4. Ensure environment variables are properly loaded\n5. Run basic health check endpoints to verify server starts correctly",
+      "priority": "high",
+      "dependencies": [],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 2,
+      "title": "Implement Google OAuth Authentication",
+      "description": "Create authentication system using Google OAuth2 for user login and session management.",
+      "details": "1. Create AuthModule with Google OAuth strategy\n2. Implement AuthController with endpoints for:\n   - `/auth/google` - Initiates Google OAuth flow\n   - `/auth/google/callback` - Handles OAuth callback\n   - `/auth/logout` - Handles user logout\n3. Create UserEntity in TypeORM:\n```typescript\n@Entity('users')\nexport class User {\n  @PrimaryGeneratedColumn()\n  id: number;\n\n  @Column({ unique: true })\n  googleId: string;\n\n  @Column()\n  nickname: string;\n\n  @Column({ default: 1000 })\n  rating: number;\n\n  @CreateDateColumn()\n  createdAt: Date;\n\n  @UpdateDateColumn()\n  updatedAt: Date;\n}\n```\n4. Implement JWT token generation for authenticated sessions\n5. Create AuthGuard for protected routes\n6. Store user session data in Redis for persistence",
+      "testStrategy": "1. Test Google OAuth flow with mock Google responses\n2. Verify user creation in database for new users\n3. Test login flow for existing users\n4. Verify JWT token generation and validation\n5. Test session persistence in Redis\n6. Verify protected routes are properly guarded",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 3,
+      "title": "Create WebSocket Infrastructure",
+      "description": "Implement Socket.IO integration with NestJS for real-time game communications, including connection management and event handling.",
+      "details": "1. Create WebSocketGateway class:\n```typescript\n@WebSocketGateway({\n  cors: true,\n  namespace: 'game'\n})\nexport class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {\n  @WebSocketServer() server: Server;\n  \n  // Connection handling\n  handleConnection(client: Socket, ...args: any[]) { }\n  \n  // Disconnection handling with reconnection support\n  handleDisconnect(client: Socket) { }\n  \n  // Initialize gateway\n  afterInit(server: Server) { }\n}\n```\n2. Implement authentication for WebSocket connections using JWT\n3. Create connection manager to track active connections\n4. Implement reconnection logic to maintain game state during brief disconnections\n5. Create event handlers for game-related events\n6. Setup Redis for sharing WebSocket state across multiple server instances\n7. Implement heartbeat mechanism to detect disconnections",
+      "testStrategy": "1. Test WebSocket connection establishment\n2. Verify authentication works for socket connections\n3. Test reconnection logic with simulated disconnections\n4. Verify events are properly received and processed\n5. Test concurrent connections and load handling\n6. Verify Redis synchronization for WebSocket state",
+      "priority": "high",
+      "dependencies": [
+        1,
+        2
+      ],
+      "status": "in-progress",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement WebSocketGateway with Connection Handling",
+          "description": "Create the WebSocketGateway class with basic connection and disconnection handling methods, and initialize the gateway.",
+          "dependencies": [],
+          "details": "Create a new file `game.gateway.ts` in the appropriate directory. Implement the WebSocketGateway class with the provided decorator configuration. Implement the OnGatewayInit, OnGatewayConnection, and OnGatewayDisconnect interfaces with their required methods. Log connection and disconnection events, and store the server instance in the afterInit method.",
+          "status": "pending",
+          "testStrategy": "Write unit tests to verify that the gateway initializes correctly and that connection/disconnection handlers are called with the expected parameters."
+        },
+        {
+          "id": 2,
+          "title": "Implement JWT Authentication for WebSocket Connections",
+          "description": "Add JWT authentication to WebSocket connections to ensure only authenticated users can connect to the game namespace.",
+          "dependencies": [
+            1
+          ],
+          "details": "Modify the handleConnection method to extract the JWT token from the handshake query or headers. Create an authentication service or use an existing one to validate the token. If validation fails, disconnect the client with an appropriate error message. If validation succeeds, store the user information in the client's data for future reference.",
+          "status": "pending",
+          "testStrategy": "Test with valid and invalid JWT tokens to ensure proper authentication behavior. Verify that unauthorized connections are rejected and authorized ones are accepted."
+        },
+        {
+          "id": 3,
+          "title": "Create Connection Manager for Active Connections",
+          "description": "Implement a connection manager service to track active connections and associate them with user IDs.",
+          "dependencies": [
+            2
+          ],
+          "details": "Create a new ConnectionManagerService that maintains a map of user IDs to socket IDs. Implement methods to add, remove, and retrieve connections. Update the gateway's handleConnection and handleDisconnect methods to register and unregister connections with this service. Add methods to find a user's socket by their ID and to broadcast messages to specific users.",
+          "status": "pending",
+          "testStrategy": "Test the connection manager's ability to correctly track connections and disconnections. Verify that it can retrieve the correct socket for a given user ID."
+        },
+        {
+          "id": 4,
+          "title": "Implement Reconnection Logic and Heartbeat Mechanism",
+          "description": "Add support for client reconnections to maintain game state during brief disconnections and implement a heartbeat mechanism to detect disconnections.",
+          "dependencies": [
+            3
+          ],
+          "details": "Modify the connection manager to support temporary disconnections by keeping user data for a configurable grace period. Implement a heartbeat mechanism using setInterval to periodically ping connected clients and detect unresponsive ones. Create a reconnection handler that restores the user's previous state when they reconnect within the grace period. Update the handleDisconnect method to differentiate between temporary and permanent disconnections.",
+          "status": "pending",
+          "testStrategy": "Test reconnection scenarios by simulating network interruptions. Verify that clients can successfully reconnect within the grace period and that their game state is preserved. Test that unresponsive clients are properly detected by the heartbeat mechanism."
+        },
+        {
+          "id": 5,
+          "title": "Implement Game Event Handlers and Redis Integration",
+          "description": "Create event handlers for game-related events and integrate Redis for sharing WebSocket state across multiple server instances.",
+          "dependencies": [
+            4
+          ],
+          "details": "Define and implement WebSocket event handlers for game actions (e.g., @SubscribeMessage('move')). Create a Redis adapter for Socket.IO to enable scaling across multiple server instances. Configure the adapter in the gateway. Implement the necessary Redis pub/sub mechanisms to synchronize connection state and events across instances. Update the connection manager to use Redis for storing connection information.",
+          "status": "pending",
+          "testStrategy": "Test event handlers with various game scenarios. Verify that events are properly processed and that responses are sent to the correct clients. Test the Redis integration by running multiple server instances and verifying that events and connection state are properly synchronized."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Implement Game Room Management",
+      "description": "Create system for managing game rooms including creation, joining, leaving, and deletion of rooms.",
+      "details": "1. Create RoomEntity in TypeORM:\n```typescript\n@Entity('rooms')\nexport class Room {\n  @PrimaryGeneratedColumn()\n  id: number;\n\n  @Column({ unique: true })\n  roomCode: string;\n\n  @Column({ type: 'json', nullable: true })\n  gameState: any;\n\n  @Column({ type: 'json' })\n  players: { id: number, nickname: string, color: string }[];\n\n  @Column({ type: 'json', default: '[]' })\n  spectators: { id: number, nickname: string }[];\n\n  @Column({ default: false })\n  isActive: boolean;\n\n  @Column({ nullable: true })\n  startTime: Date;\n\n  @Column({ nullable: true })\n  endTime: Date;\n\n  @CreateDateColumn()\n  createdAt: Date;\n\n  @UpdateDateColumn()\n  updatedAt: Date;\n}\n```\n2. Implement Redis cache for active rooms\n3. Create WebSocket event handlers for:\n   - `createRoom` - Creates a new game room\n   - `joinRoom` - Joins an existing room\n   - `leaveRoom` - Leaves a room\n   - `deleteRoom` - Deletes a room (admin only)\n4. Implement room code generation\n5. Create room service for managing room state\n6. Implement spectator functionality for watching games\n7. Handle room cleanup after game completion",
+      "testStrategy": "1. Test room creation with valid parameters\n2. Verify joining rooms works correctly\n3. Test leaving rooms and proper cleanup\n4. Verify room deletion works and cleans up resources\n5. Test concurrent room operations\n6. Verify Redis caching of room data\n7. Test spectator functionality",
+      "priority": "medium",
+      "dependencies": [
+        3
+      ],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 5,
+      "title": "Implement Game Board Logic",
+      "description": "Create the core game logic for the Go-like game including board representation, move validation, territory calculation, and win condition checking.",
+      "details": "1. Create GameBoard class to represent 9x9 grid:\n```typescript\nexport class GameBoard {\n  private board: number[][] = Array(9).fill(0).map(() => Array(9).fill(0));\n  private currentPlayer: number = 1; // 1 for black, 2 for white\n  private capturedStones: { [key: number]: number } = { 1: 0, 2: 0 };\n  \n  // Place a stone on the board\n  placeStone(row: number, col: number): boolean { }\n  \n  // Check if a move is valid\n  isValidMove(row: number, col: number, player: number): boolean { }\n  \n  // Calculate territories\n  calculateTerritories(): { [key: number]: number } { }\n  \n  // Check for win conditions\n  checkWinCondition(): number | null { }\n  \n  // Get current board state\n  getBoardState(): number[][] { }\n}\n```\n2. Implement move validation logic:\n   - Check if position is empty\n   - Check for territory violations\n   - Check for capture conditions\n3. Implement territory calculation algorithm using flood fill\n4. Implement stone capture logic\n5. Create win condition checks:\n   - Capture at least one opponent stone\n   - More territory when counting\n6. Implement game state serialization for storage and transmission",
+      "testStrategy": "1. Test board initialization\n2. Verify valid and invalid moves are correctly identified\n3. Test territory calculation with various board configurations\n4. Verify stone capture logic works correctly\n5. Test win condition detection\n6. Verify game state serialization and deserialization\n7. Create comprehensive test suite with different game scenarios",
+      "priority": "high",
+      "dependencies": [
+        3
+      ],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 6,
+      "title": "Implement Game Timer and Disconnect Handling",
+      "description": "Create timer functionality for games and handle player disconnections with appropriate game state updates.",
+      "details": "1. Create TimerService to manage game timers:\n```typescript\n@Injectable()\nexport class TimerService {\n  private timers: Map<string, {\n    playerTimers: { [playerId: string]: number },\n    interval: any,\n    currentPlayer: string\n  }> = new Map();\n  \n  // Start timer for a game\n  startTimer(roomId: string, players: string[], timeLimit: number): void { }\n  \n  // Switch active player\n  switchPlayer(roomId: string, nextPlayerId: string): void { }\n  \n  // Pause timer (for disconnections)\n  pauseTimer(roomId: string): void { }\n  \n  // Resume timer\n  resumeTimer(roomId: string): void { }\n  \n  // Stop and clear timer\n  clearTimer(roomId: string): void { }\n}\n```\n2. Implement disconnect handling in GameGateway:\n   - Store last connection time in Redis\n   - Check for reconnection within 1 minute\n   - Auto-forfeit game if disconnection exceeds 1 minute\n3. Create timeout detection and handling\n4. Implement timer events to notify clients of remaining time\n5. Create timer display data for frontend\n6. Handle game state updates on timeout or disconnect forfeit",
+      "testStrategy": "1. Test timer initialization and countdown\n2. Verify player switching updates timer correctly\n3. Test pause and resume functionality\n4. Verify timeout detection and handling\n5. Test disconnect handling with various scenarios\n6. Verify auto-forfeit after 1 minute disconnection\n7. Test concurrent timers for multiple games",
+      "priority": "medium",
+      "dependencies": [
+        3,
+        4,
+        5
+      ],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 7,
+      "title": "Implement Matchmaking System with ELO Rating",
+      "description": "Create a matchmaking system that pairs players based on their ELO ratings and manages the queue of players waiting for matches.",
+      "details": "1. Create MatchmakingService:\n```typescript\n@Injectable()\nexport class MatchmakingService {\n  private queue: Map<string, {\n    userId: number,\n    rating: number,\n    joinTime: Date\n  }> = new Map();\n  \n  // Add player to queue\n  addToQueue(userId: number, rating: number): void { }\n  \n  // Remove player from queue\n  removeFromQueue(userId: number): void { }\n  \n  // Find match for player\n  findMatch(userId: number): { matchedUserId: number } | null { }\n  \n  // Process queue to create matches\n  processQueue(): void { }\n}\n```\n2. Implement ELO rating system:\n```typescript\n@Injectable()\nexport class RatingService {\n  // Calculate new ratings after a game\n  calculateNewRatings(winnerRating: number, loserRating: number): {\n    newWinnerRating: number,\n    newLoserRating: number\n  } { }\n}\n```\n3. Create WebSocket events for matchmaking:\n   - `joinQueue` - Add player to matchmaking queue\n   - `leaveQueue` - Remove player from queue\n   - `matchFound` - Notify players of match\n4. Implement match acceptance/rejection flow\n5. Create rating adjustment after game completion\n6. Store rating history in database\n7. Implement queue timeout handling",
+      "testStrategy": "1. Test adding and removing players from queue\n2. Verify matchmaking algorithm pairs players with similar ratings\n3. Test ELO rating calculations with various scenarios\n4. Verify match acceptance flow works correctly\n5. Test rating adjustments after game completion\n6. Verify queue timeout handling\n7. Test concurrent queue operations",
+      "priority": "medium",
+      "dependencies": [
+        2,
+        4
+      ],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 8,
+      "title": "Implement Game History and Database Storage",
+      "description": "Create system for recording game moves, results, and statistics in the database for historical reference and analysis.",
+      "details": "1. Create GameEntity in TypeORM:\n```typescript\n@Entity('games')\nexport class Game {\n  @PrimaryGeneratedColumn()\n  id: number;\n\n  @Column()\n  roomId: number;\n\n  @ManyToOne(() => User)\n  player1: User;\n\n  @ManyToOne(() => User)\n  player2: User;\n\n  @ManyToOne(() => User, { nullable: true })\n  winner: User;\n\n  @Column({ type: 'json' })\n  moves: { player: number, row: number, col: number, timestamp: Date }[];\n\n  @Column({ type: 'json' })\n  finalBoardState: number[][];\n\n  @Column()\n  startTime: Date;\n\n  @Column({ nullable: true })\n  endTime: Date;\n\n  @Column({ default: 'in_progress' })\n  status: 'in_progress' | 'completed' | 'abandoned';\n\n  @Column({ type: 'json', nullable: true })\n  result: {\n    reason: 'capture' | 'territory' | 'timeout' | 'forfeit',\n    player1Territory?: number,\n    player2Territory?: number,\n    player1Captures?: number,\n    player2Captures?: number\n  };\n\n  @CreateDateColumn()\n  createdAt: Date;\n\n  @UpdateDateColumn()\n  updatedAt: Date;\n}\n```\n2. Implement GameService for database operations:\n   - Create new game record\n   - Update game with moves\n   - Record game result\n   - Query game history\n3. Create move recording system during gameplay\n4. Implement game result calculation and storage\n5. Create API endpoints for retrieving game history\n6. Implement statistics calculation (win rate, average game length, etc.)\n7. Create data export functionality for game replay",
+      "testStrategy": "1. Test game creation in database\n2. Verify move recording works correctly\n3. Test game result calculation and storage\n4. Verify API endpoints return correct game history\n5. Test statistics calculation\n6. Verify data export functionality\n7. Test concurrent database operations",
+      "priority": "medium",
+      "dependencies": [
+        2,
+        5
+      ],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 9,
+      "title": "Create RESTful API for User Profiles and Game History",
+      "description": "Implement REST API endpoints for retrieving user profiles, game history, and statistics.",
+      "details": "1. Create UserController with endpoints:\n```typescript\n@Controller('users')\nexport class UserController {\n  constructor(private userService: UserService) {}\n\n  @Get('profile')\n  @UseGuards(JwtAuthGuard)\n  getProfile(@Request() req): Promise<User> { }\n\n  @Get(':id')\n  getUserById(@Param('id') id: number): Promise<User> { }\n\n  @Get(':id/games')\n  getUserGames(@Param('id') id: number): Promise<Game[]> { }\n\n  @Get(':id/statistics')\n  getUserStatistics(@Param('id') id: number): Promise<{\n    totalGames: number,\n    wins: number,\n    losses: number,\n    winRate: number,\n    averageGameLength: number,\n    ratingHistory: { date: Date, rating: number }[]\n  }> { }\n}\n```\n2. Create GameController with endpoints:\n```typescript\n@Controller('games')\nexport class GameController {\n  constructor(private gameService: GameService) {}\n\n  @Get(':id')\n  getGameById(@Param('id') id: number): Promise<Game> { }\n\n  @Get('recent')\n  getRecentGames(@Query('limit') limit: number): Promise<Game[]> { }\n}\n```\n3. Implement UserService for database operations\n4. Create DTOs for API responses\n5. Implement pagination for game history\n6. Add filtering options for game history\n7. Implement caching for frequently accessed data\n8. Create documentation for API endpoints",
+      "testStrategy": "1. Test user profile retrieval\n2. Verify game history retrieval works correctly\n3. Test statistics calculation endpoints\n4. Verify pagination works for large result sets\n5. Test filtering options\n6. Verify caching improves performance\n7. Test API with authentication\n8. Verify error handling for invalid requests",
+      "priority": "low",
+      "dependencies": [
+        2,
+        8
+      ],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 10,
+      "title": "Setup AWS Deployment and Monitoring",
+      "description": "Configure AWS infrastructure for hosting the application and implement monitoring for server health and game metrics.",
+      "details": "1. Create AWS infrastructure using Terraform or CloudFormation:\n   - EC2 instances or ECS containers for application hosting\n   - RDS for PostgreSQL database\n   - ElastiCache for Redis\n   - Load balancer for traffic distribution\n   - S3 for static assets\n2. Setup CI/CD pipeline using GitHub Actions or AWS CodePipeline\n3. Configure environment variables for production\n4. Implement health check endpoints\n5. Setup CloudWatch for monitoring:\n   - Server metrics (CPU, memory, network)\n   - Application metrics (active games, users, errors)\n   - Custom alarms for critical issues\n6. Create dashboard for game metrics:\n   - Active users\n   - Games in progress\n   - Average game duration\n   - Rating distribution\n7. Implement logging with structured format\n8. Setup backup strategy for database\n9. Configure auto-scaling based on load",
+      "testStrategy": "1. Test deployment process to staging environment\n2. Verify all services connect correctly in production\n3. Test load balancing with simulated traffic\n4. Verify monitoring captures relevant metrics\n5. Test alerts by triggering alarm conditions\n6. Verify logs are properly collected and searchable\n7. Test backup and restore procedures\n8. Verify auto-scaling responds to load changes",
+      "priority": "low",
+      "dependencies": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "status": "pending",
+      "subtasks": []
+    }
+  ]
+}

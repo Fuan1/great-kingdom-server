@@ -1,0 +1,76 @@
+# Task ID: 8
+# Title: Implement Game History and Database Storage
+# Status: pending
+# Dependencies: 2, 5
+# Priority: medium
+# Description: Create system for recording game moves, results, and statistics in the database for historical reference and analysis.
+# Details:
+1. Create GameEntity in TypeORM:
+```typescript
+@Entity('games')
+export class Game {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  roomId: number;
+
+  @ManyToOne(() => User)
+  player1: User;
+
+  @ManyToOne(() => User)
+  player2: User;
+
+  @ManyToOne(() => User, { nullable: true })
+  winner: User;
+
+  @Column({ type: 'json' })
+  moves: { player: number, row: number, col: number, timestamp: Date }[];
+
+  @Column({ type: 'json' })
+  finalBoardState: number[][];
+
+  @Column()
+  startTime: Date;
+
+  @Column({ nullable: true })
+  endTime: Date;
+
+  @Column({ default: 'in_progress' })
+  status: 'in_progress' | 'completed' | 'abandoned';
+
+  @Column({ type: 'json', nullable: true })
+  result: {
+    reason: 'capture' | 'territory' | 'timeout' | 'forfeit',
+    player1Territory?: number,
+    player2Territory?: number,
+    player1Captures?: number,
+    player2Captures?: number
+  };
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+```
+2. Implement GameService for database operations:
+   - Create new game record
+   - Update game with moves
+   - Record game result
+   - Query game history
+3. Create move recording system during gameplay
+4. Implement game result calculation and storage
+5. Create API endpoints for retrieving game history
+6. Implement statistics calculation (win rate, average game length, etc.)
+7. Create data export functionality for game replay
+
+# Test Strategy:
+1. Test game creation in database
+2. Verify move recording works correctly
+3. Test game result calculation and storage
+4. Verify API endpoints return correct game history
+5. Test statistics calculation
+6. Verify data export functionality
+7. Test concurrent database operations

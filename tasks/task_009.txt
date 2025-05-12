@@ -1,0 +1,63 @@
+# Task ID: 9
+# Title: Create RESTful API for User Profiles and Game History
+# Status: pending
+# Dependencies: 2, 8
+# Priority: low
+# Description: Implement REST API endpoints for retrieving user profiles, game history, and statistics.
+# Details:
+1. Create UserController with endpoints:
+```typescript
+@Controller('users')
+export class UserController {
+  constructor(private userService: UserService) {}
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  getProfile(@Request() req): Promise<User> { }
+
+  @Get(':id')
+  getUserById(@Param('id') id: number): Promise<User> { }
+
+  @Get(':id/games')
+  getUserGames(@Param('id') id: number): Promise<Game[]> { }
+
+  @Get(':id/statistics')
+  getUserStatistics(@Param('id') id: number): Promise<{
+    totalGames: number,
+    wins: number,
+    losses: number,
+    winRate: number,
+    averageGameLength: number,
+    ratingHistory: { date: Date, rating: number }[]
+  }> { }
+}
+```
+2. Create GameController with endpoints:
+```typescript
+@Controller('games')
+export class GameController {
+  constructor(private gameService: GameService) {}
+
+  @Get(':id')
+  getGameById(@Param('id') id: number): Promise<Game> { }
+
+  @Get('recent')
+  getRecentGames(@Query('limit') limit: number): Promise<Game[]> { }
+}
+```
+3. Implement UserService for database operations
+4. Create DTOs for API responses
+5. Implement pagination for game history
+6. Add filtering options for game history
+7. Implement caching for frequently accessed data
+8. Create documentation for API endpoints
+
+# Test Strategy:
+1. Test user profile retrieval
+2. Verify game history retrieval works correctly
+3. Test statistics calculation endpoints
+4. Verify pagination works for large result sets
+5. Test filtering options
+6. Verify caching improves performance
+7. Test API with authentication
+8. Verify error handling for invalid requests

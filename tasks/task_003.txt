@@ -1,0 +1,72 @@
+# Task ID: 3
+# Title: Create WebSocket Infrastructure
+# Status: in-progress
+# Dependencies: 1, 2
+# Priority: high
+# Description: Implement Socket.IO integration with NestJS for real-time game communications, including connection management and event handling.
+# Details:
+1. Create WebSocketGateway class:
+```typescript
+@WebSocketGateway({
+  cors: true,
+  namespace: 'game'
+})
+export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  @WebSocketServer() server: Server;
+  
+  // Connection handling
+  handleConnection(client: Socket, ...args: any[]) { }
+  
+  // Disconnection handling with reconnection support
+  handleDisconnect(client: Socket) { }
+  
+  // Initialize gateway
+  afterInit(server: Server) { }
+}
+```
+2. Implement authentication for WebSocket connections using JWT
+3. Create connection manager to track active connections
+4. Implement reconnection logic to maintain game state during brief disconnections
+5. Create event handlers for game-related events
+6. Setup Redis for sharing WebSocket state across multiple server instances
+7. Implement heartbeat mechanism to detect disconnections
+
+# Test Strategy:
+1. Test WebSocket connection establishment
+2. Verify authentication works for socket connections
+3. Test reconnection logic with simulated disconnections
+4. Verify events are properly received and processed
+5. Test concurrent connections and load handling
+6. Verify Redis synchronization for WebSocket state
+
+# Subtasks:
+## 1. Implement WebSocketGateway with Connection Handling [pending]
+### Dependencies: None
+### Description: Create the WebSocketGateway class with basic connection and disconnection handling methods, and initialize the gateway.
+### Details:
+Create a new file `game.gateway.ts` in the appropriate directory. Implement the WebSocketGateway class with the provided decorator configuration. Implement the OnGatewayInit, OnGatewayConnection, and OnGatewayDisconnect interfaces with their required methods. Log connection and disconnection events, and store the server instance in the afterInit method.
+
+## 2. Implement JWT Authentication for WebSocket Connections [pending]
+### Dependencies: 3.1
+### Description: Add JWT authentication to WebSocket connections to ensure only authenticated users can connect to the game namespace.
+### Details:
+Modify the handleConnection method to extract the JWT token from the handshake query or headers. Create an authentication service or use an existing one to validate the token. If validation fails, disconnect the client with an appropriate error message. If validation succeeds, store the user information in the client's data for future reference.
+
+## 3. Create Connection Manager for Active Connections [pending]
+### Dependencies: 3.2
+### Description: Implement a connection manager service to track active connections and associate them with user IDs.
+### Details:
+Create a new ConnectionManagerService that maintains a map of user IDs to socket IDs. Implement methods to add, remove, and retrieve connections. Update the gateway's handleConnection and handleDisconnect methods to register and unregister connections with this service. Add methods to find a user's socket by their ID and to broadcast messages to specific users.
+
+## 4. Implement Reconnection Logic and Heartbeat Mechanism [pending]
+### Dependencies: 3.3
+### Description: Add support for client reconnections to maintain game state during brief disconnections and implement a heartbeat mechanism to detect disconnections.
+### Details:
+Modify the connection manager to support temporary disconnections by keeping user data for a configurable grace period. Implement a heartbeat mechanism using setInterval to periodically ping connected clients and detect unresponsive ones. Create a reconnection handler that restores the user's previous state when they reconnect within the grace period. Update the handleDisconnect method to differentiate between temporary and permanent disconnections.
+
+## 5. Implement Game Event Handlers and Redis Integration [pending]
+### Dependencies: 3.4
+### Description: Create event handlers for game-related events and integrate Redis for sharing WebSocket state across multiple server instances.
+### Details:
+Define and implement WebSocket event handlers for game actions (e.g., @SubscribeMessage('move')). Create a Redis adapter for Socket.IO to enable scaling across multiple server instances. Configure the adapter in the gateway. Implement the necessary Redis pub/sub mechanisms to synchronize connection state and events across instances. Update the connection manager to use Redis for storing connection information.
+

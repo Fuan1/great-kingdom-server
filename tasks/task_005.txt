@@ -1,0 +1,49 @@
+# Task ID: 5
+# Title: Implement Game Board Logic
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: Create the core game logic for the Go-like game including board representation, move validation, territory calculation, and win condition checking.
+# Details:
+1. Create GameBoard class to represent 9x9 grid:
+```typescript
+export class GameBoard {
+  private board: number[][] = Array(9).fill(0).map(() => Array(9).fill(0));
+  private currentPlayer: number = 1; // 1 for black, 2 for white
+  private capturedStones: { [key: number]: number } = { 1: 0, 2: 0 };
+  
+  // Place a stone on the board
+  placeStone(row: number, col: number): boolean { }
+  
+  // Check if a move is valid
+  isValidMove(row: number, col: number, player: number): boolean { }
+  
+  // Calculate territories
+  calculateTerritories(): { [key: number]: number } { }
+  
+  // Check for win conditions
+  checkWinCondition(): number | null { }
+  
+  // Get current board state
+  getBoardState(): number[][] { }
+}
+```
+2. Implement move validation logic:
+   - Check if position is empty
+   - Check for territory violations
+   - Check for capture conditions
+3. Implement territory calculation algorithm using flood fill
+4. Implement stone capture logic
+5. Create win condition checks:
+   - Capture at least one opponent stone
+   - More territory when counting
+6. Implement game state serialization for storage and transmission
+
+# Test Strategy:
+1. Test board initialization
+2. Verify valid and invalid moves are correctly identified
+3. Test territory calculation with various board configurations
+4. Verify stone capture logic works correctly
+5. Test win condition detection
+6. Verify game state serialization and deserialization
+7. Create comprehensive test suite with different game scenarios

@@ -1,0 +1,61 @@
+# Task ID: 4
+# Title: Implement Game Room Management
+# Status: pending
+# Dependencies: 3
+# Priority: medium
+# Description: Create system for managing game rooms including creation, joining, leaving, and deletion of rooms.
+# Details:
+1. Create RoomEntity in TypeORM:
+```typescript
+@Entity('rooms')
+export class Room {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ unique: true })
+  roomCode: string;
+
+  @Column({ type: 'json', nullable: true })
+  gameState: any;
+
+  @Column({ type: 'json' })
+  players: { id: number, nickname: string, color: string }[];
+
+  @Column({ type: 'json', default: '[]' })
+  spectators: { id: number, nickname: string }[];
+
+  @Column({ default: false })
+  isActive: boolean;
+
+  @Column({ nullable: true })
+  startTime: Date;
+
+  @Column({ nullable: true })
+  endTime: Date;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+```
+2. Implement Redis cache for active rooms
+3. Create WebSocket event handlers for:
+   - `createRoom` - Creates a new game room
+   - `joinRoom` - Joins an existing room
+   - `leaveRoom` - Leaves a room
+   - `deleteRoom` - Deletes a room (admin only)
+4. Implement room code generation
+5. Create room service for managing room state
+6. Implement spectator functionality for watching games
+7. Handle room cleanup after game completion
+
+# Test Strategy:
+1. Test room creation with valid parameters
+2. Verify joining rooms works correctly
+3. Test leaving rooms and proper cleanup
+4. Verify room deletion works and cleans up resources
+5. Test concurrent room operations
+6. Verify Redis caching of room data
+7. Test spectator functionality
