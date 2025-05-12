@@ -44,3 +44,55 @@ export class User {
 4. Verify JWT token generation and validation
 5. Test session persistence in Redis
 6. Verify protected routes are properly guarded
+
+# Subtasks:
+## 1. Set up User Entity and Database Integration [done]
+### Dependencies: None
+### Description: Create the User entity with TypeORM and configure database connection for user storage
+### Details:
+1. Create the UserEntity class with all required fields (id, googleId, nickname, rating, timestamps)
+2. Configure TypeORM connection in app module
+3. Create a migration for the users table
+4. Set up a UserRepository for database operations
+5. Implement basic CRUD operations for the User entity
+
+## 2. Implement Google OAuth Strategy [done]
+### Dependencies: None
+### Description: Set up the Google OAuth strategy using Passport.js and configure the authentication flow
+### Details:
+1. Install required packages (passport, passport-google-oauth20)
+2. Create an AuthModule with Passport configuration
+3. Register the Google OAuth strategy with client ID and secret from environment variables
+4. Configure the strategy to create or find users based on Google profile
+5. Implement the validateUser method to handle user lookup/creation
+
+## 3. Create Authentication Controller and Routes [done]
+### Dependencies: None
+### Description: Implement the AuthController with endpoints for Google OAuth flow and logout functionality
+### Details:
+1. Create AuthController with required endpoints
+2. Implement /auth/google endpoint to initiate OAuth flow
+3. Implement /auth/google/callback to handle the OAuth response
+4. Create /auth/logout endpoint for session termination
+5. Add proper error handling and response formatting
+
+## 4. Implement JWT Token Generation and Validation [done]
+### Dependencies: None
+### Description: Create JWT token generation for authenticated sessions and implement validation logic
+### Details:
+1. Install JWT packages (jsonwebtoken or @nestjs/jwt)
+2. Create a JwtService for token generation and validation
+3. Implement token generation after successful OAuth authentication
+4. Create methods for token validation and extraction
+5. Configure JWT secret and expiration from environment variables
+
+## 5. Implement Redis Session Storage and Auth Guards [done]
+### Dependencies: None
+### Description: Set up Redis for session storage and create AuthGuard for protecting routes
+### Details:
+1. Install Redis client packages
+2. Configure Redis connection in the application
+3. Implement session storage and retrieval methods
+4. Create an AuthGuard that validates JWT tokens and checks Redis for active sessions
+5. Implement route protection using the guard and test on sample protected endpoints
+

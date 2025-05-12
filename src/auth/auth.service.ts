@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { User } from '@prisma/client';
@@ -43,6 +43,7 @@ export class AuthService {
       return {
         accessToken: jwtToken,
         expiresIn: expiresIn,
+        user: user,
       };
     } catch (error) {
       throw new UnauthorizedException('Failed to authenticate with Google');
@@ -81,27 +82,27 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
-  // async verifyToken(token: string) {
-  //   try {
-  //     const payload = this.jwtService.verify(token);
-  //     const user = await this.prismaService.user.findUnique({
-  //       where: { id: payload.sub },
-  //     });
+  async verifyToken(token: string) {
+    try {
+      const payload = this.jwtService.verify(token);
+      const user = await this.prismaService.user.findUnique({
+        where: { id: payload.sub },
+      });
 
-  //     if (!user) {
-  //       throw new UnauthorizedException('User not found');
-  //     }
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
 
-  //     return {
-  //       id: user.id,
-  //       email: user.email,
-  //       name: user.name,
-  //       picture: user.picture,
-  //     };
-  //   } catch (error) {
-  //     throw new UnauthorizedException('Invalid token');
-  //   }
-  // }
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid token');
+    }
+  }
 
   // Logout handling (token blacklist processing and other logic can be added)
   async logout() {

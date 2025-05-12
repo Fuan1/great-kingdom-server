@@ -13,6 +13,7 @@ import { GameService } from '../../game-logic/game-logic.service';
 import { GameMove } from '../../game-logic/interface/game.interface';
 import { GameEventType } from './types';
 import { Logger } from '@nestjs/common';
+import { AuthService } from '../../auth/auth.service';
 
 @WebSocketGateway({
   cors: {
@@ -24,13 +25,17 @@ export class GameGateway
 {
   private readonly logger = new Logger(GameGateway.name);
   private playerGameMap: Map<string, string> = new Map();
+  private userSocketMap: Map<string, string> = new Map();
   private activeGames: Set<string> = new Set();
   private timeInterval: NodeJS.Timeout;
 
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly gameService: GameService) {}
+  constructor(
+    private readonly gameService: GameService,
+    private readonly authService: AuthService,
+  ) {}
 
   afterInit(server: any) {
     this.timeInterval = setInterval(() => {
@@ -61,16 +66,46 @@ export class GameGateway
   // 게임 중에 소켓 연결 해제 된 경우 다시 접속 가능해야 함
   // 연결 해제 1분이 지난 경우 게임이 종료되어야 함 (time loss)
 
-  handleConnection(client: Socket) {
-    this.logger.log(`Client connected: ${client.id}`);
+  async handleConnection(client: Socket) {
+    try {
+      const token = client.handshake.auth.token;
+
+      if (!token) {
+        client.disconnect();
+        return;
+      }
+
+      const payload = await this.authService.verifyToken(token);
+      const userId = payload.id;
+
+      this.userSocketMap.set(userId, client.id);
+      client.data.userId = userId;
+
+      this.logger.log(`Client connected: ${client.id}, userId: ${userId}`);
+    } catch (error) {
+      this.logger.error(`Error handling connection: ${error}`);
+      client.disconnect();
+    }
   }
 
   handleDisconnect(client: Socket) {
-    this.logger.log(`Client disconnected: ${client.id}`);
-    const gameId = this.playerGameMap.get(client.id);
-    if (gameId) {
-      this.leaveGame(client, { gameId });
+    const userId = client.data.userId;
+    if (userId) {
+      this.userSocketMap.delete(userId);
+      this.logger.log(`Client disconnected: ${client.id}`);
     }
+  }
+
+  // 재연결 처리를 위한 메서드
+  @SubscribeMessage('reconnect')
+  handleReconnect(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
+    const userId = client.data.userId;
+    if (userId) {
+      // 이전 상태 복원 로직
+      // 예: 놓친 메시지 전송, 상태 업데이트 등
+      return { status: 'reconnected', userId };
+    }
+    return { status: 'error', message: 'Authentication required' };
   }
 
   @SubscribeMessage('createGame')

@@ -59,3 +59,47 @@ export class Room {
 5. Test concurrent room operations
 6. Verify Redis caching of room data
 7. Test spectator functionality
+
+# Subtasks:
+## 1. Create Room Entity and Repository [pending]
+### Dependencies: None
+### Description: Implement the Room entity in TypeORM with all required fields and create a repository for database operations.
+### Details:
+Create the Room entity class as specified in the requirements with all fields. Implement a RoomRepository that extends TypeORM's Repository with methods for CRUD operations. Include methods for finding rooms by roomCode, updating player lists, and managing game state.
+
+## 2. Implement Redis Cache for Active Rooms [pending]
+### Dependencies: 4.1
+### Description: Set up Redis caching for active game rooms to improve performance and reduce database load.
+### Details:
+Create a RoomCacheService that handles storing and retrieving active room data in Redis. Implement methods to sync between database and cache, with TTL for inactive rooms. Use a consistent serialization format for room data in Redis. Include cache invalidation strategies when rooms are updated.
+
+## 3. Create Room Service for State Management [pending]
+### Dependencies: 4.1, 4.2
+### Description: Develop a service layer to handle room business logic and state management.
+### Details:
+Implement RoomService with methods for creating, joining, leaving, and deleting rooms. Include logic for player management, spectator handling, and room state transitions. Implement room code generation using a secure random algorithm. Add methods for validating room operations based on user roles and room state.
+
+## 4. Implement WebSocket Event Handlers for Room Operations [pending]
+### Dependencies: 4.3
+### Description: Create WebSocket event handlers for room-related operations using the room service.
+### Details:
+Implement handlers for 'createRoom', 'joinRoom', 'leaveRoom', and 'deleteRoom' events. Each handler should validate input, call appropriate room service methods, and emit response events. Include error handling and appropriate response formats. Implement authentication and authorization checks for each operation.
+
+## 5. Implement Spectator Functionality [pending]
+### Dependencies: 4.3, 4.4
+### Description: Add support for spectators to watch games without participating.
+### Details:
+Extend the room service and WebSocket handlers to support spectator operations. Implement 'joinAsSpectator' and 'leaveAsSpectator' methods. Add logic to broadcast game state updates to spectators. Ensure spectators can't modify game state but receive all updates.
+
+## 6. Implement Room Cleanup and Lifecycle Management [pending]
+### Dependencies: 4.2, 4.3
+### Description: Create mechanisms to handle room lifecycle including cleanup after game completion.
+### Details:
+Implement a cleanup service that monitors room activity and handles stale rooms. Add methods to archive completed games and clean up Redis cache. Create a scheduled task to periodically check for abandoned rooms. Implement proper handling of disconnections and reconnections.
+
+## 7. Create Room Status Monitoring and Notifications [pending]
+### Dependencies: 4.4, 4.5, 4.6
+### Description: Implement a system to monitor room status and notify users of changes.
+### Details:
+Create a notification system for room events (player joined/left, game started/ended). Implement a room status dashboard for administrators. Add WebSocket events for broadcasting room status changes. Create metrics collection for room usage statistics.
+

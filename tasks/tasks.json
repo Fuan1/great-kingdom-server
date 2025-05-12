@@ -22,7 +22,53 @@
         1
       ],
       "status": "done",
-      "subtasks": []
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Set up User Entity and Database Integration",
+          "description": "Create the User entity with TypeORM and configure database connection for user storage",
+          "dependencies": [],
+          "details": "1. Create the UserEntity class with all required fields (id, googleId, nickname, rating, timestamps)\n2. Configure TypeORM connection in app module\n3. Create a migration for the users table\n4. Set up a UserRepository for database operations\n5. Implement basic CRUD operations for the User entity",
+          "status": "done",
+          "testStrategy": "Write unit tests for the User entity and repository with mock database connections"
+        },
+        {
+          "id": 2,
+          "title": "Implement Google OAuth Strategy",
+          "description": "Set up the Google OAuth strategy using Passport.js and configure the authentication flow",
+          "dependencies": [],
+          "details": "1. Install required packages (passport, passport-google-oauth20)\n2. Create an AuthModule with Passport configuration\n3. Register the Google OAuth strategy with client ID and secret from environment variables\n4. Configure the strategy to create or find users based on Google profile\n5. Implement the validateUser method to handle user lookup/creation",
+          "status": "done",
+          "testStrategy": "Create unit tests for the Google strategy with mocked Google responses"
+        },
+        {
+          "id": 3,
+          "title": "Create Authentication Controller and Routes",
+          "description": "Implement the AuthController with endpoints for Google OAuth flow and logout functionality",
+          "dependencies": [],
+          "details": "1. Create AuthController with required endpoints\n2. Implement /auth/google endpoint to initiate OAuth flow\n3. Implement /auth/google/callback to handle the OAuth response\n4. Create /auth/logout endpoint for session termination\n5. Add proper error handling and response formatting",
+          "status": "done",
+          "testStrategy": "Write e2e tests for authentication flow with mocked OAuth responses"
+        },
+        {
+          "id": 4,
+          "title": "Implement JWT Token Generation and Validation",
+          "description": "Create JWT token generation for authenticated sessions and implement validation logic",
+          "dependencies": [],
+          "details": "1. Install JWT packages (jsonwebtoken or @nestjs/jwt)\n2. Create a JwtService for token generation and validation\n3. Implement token generation after successful OAuth authentication\n4. Create methods for token validation and extraction\n5. Configure JWT secret and expiration from environment variables",
+          "status": "done",
+          "testStrategy": "Test JWT generation and validation with various test cases including expired tokens"
+        },
+        {
+          "id": 5,
+          "title": "Implement Redis Session Storage and Auth Guards",
+          "description": "Set up Redis for session storage and create AuthGuard for protecting routes",
+          "dependencies": [],
+          "details": "1. Install Redis client packages\n2. Configure Redis connection in the application\n3. Implement session storage and retrieval methods\n4. Create an AuthGuard that validates JWT tokens and checks Redis for active sessions\n5. Implement route protection using the guard and test on sample protected endpoints",
+          "status": "done",
+          "testStrategy": "Create integration tests for the AuthGuard with mocked Redis storage and various authentication scenarios"
+        }
+      ]
     },
     {
       "id": 3,
@@ -43,7 +89,7 @@
           "description": "Create the WebSocketGateway class with basic connection and disconnection handling methods, and initialize the gateway.",
           "dependencies": [],
           "details": "Create a new file `game.gateway.ts` in the appropriate directory. Implement the WebSocketGateway class with the provided decorator configuration. Implement the OnGatewayInit, OnGatewayConnection, and OnGatewayDisconnect interfaces with their required methods. Log connection and disconnection events, and store the server instance in the afterInit method.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Write unit tests to verify that the gateway initializes correctly and that connection/disconnection handlers are called with the expected parameters."
         },
         {
@@ -54,7 +100,7 @@
             1
           ],
           "details": "Modify the handleConnection method to extract the JWT token from the handshake query or headers. Create an authentication service or use an existing one to validate the token. If validation fails, disconnect the client with an appropriate error message. If validation succeeds, store the user information in the client's data for future reference.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test with valid and invalid JWT tokens to ensure proper authentication behavior. Verify that unauthorized connections are rejected and authorized ones are accepted."
         },
         {
@@ -65,7 +111,7 @@
             2
           ],
           "details": "Create a new ConnectionManagerService that maintains a map of user IDs to socket IDs. Implement methods to add, remove, and retrieve connections. Update the gateway's handleConnection and handleDisconnect methods to register and unregister connections with this service. Add methods to find a user's socket by their ID and to broadcast messages to specific users.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test the connection manager's ability to correctly track connections and disconnections. Verify that it can retrieve the correct socket for a given user ID."
         },
         {
@@ -103,7 +149,88 @@
         3
       ],
       "status": "pending",
-      "subtasks": []
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create Room Entity and Repository",
+          "description": "Implement the Room entity in TypeORM with all required fields and create a repository for database operations.",
+          "dependencies": [],
+          "details": "Create the Room entity class as specified in the requirements with all fields. Implement a RoomRepository that extends TypeORM's Repository with methods for CRUD operations. Include methods for finding rooms by roomCode, updating player lists, and managing game state.",
+          "status": "pending",
+          "testStrategy": "Unit test the repository methods with an in-memory database to verify proper persistence and retrieval of room data."
+        },
+        {
+          "id": 2,
+          "title": "Implement Redis Cache for Active Rooms",
+          "description": "Set up Redis caching for active game rooms to improve performance and reduce database load.",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a RoomCacheService that handles storing and retrieving active room data in Redis. Implement methods to sync between database and cache, with TTL for inactive rooms. Use a consistent serialization format for room data in Redis. Include cache invalidation strategies when rooms are updated.",
+          "status": "pending",
+          "testStrategy": "Test cache hit/miss scenarios and verify that cache stays in sync with the database using integration tests."
+        },
+        {
+          "id": 3,
+          "title": "Create Room Service for State Management",
+          "description": "Develop a service layer to handle room business logic and state management.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Implement RoomService with methods for creating, joining, leaving, and deleting rooms. Include logic for player management, spectator handling, and room state transitions. Implement room code generation using a secure random algorithm. Add methods for validating room operations based on user roles and room state.",
+          "status": "pending",
+          "testStrategy": "Unit test business logic with mocked repository and cache. Test edge cases like joining full rooms, leaving as the last player, etc."
+        },
+        {
+          "id": 4,
+          "title": "Implement WebSocket Event Handlers for Room Operations",
+          "description": "Create WebSocket event handlers for room-related operations using the room service.",
+          "dependencies": [
+            3
+          ],
+          "details": "Implement handlers for 'createRoom', 'joinRoom', 'leaveRoom', and 'deleteRoom' events. Each handler should validate input, call appropriate room service methods, and emit response events. Include error handling and appropriate response formats. Implement authentication and authorization checks for each operation.",
+          "status": "pending",
+          "testStrategy": "Test WebSocket event handlers with mocked services. Verify correct event responses and error handling."
+        },
+        {
+          "id": 5,
+          "title": "Implement Spectator Functionality",
+          "description": "Add support for spectators to watch games without participating.",
+          "dependencies": [
+            3,
+            4
+          ],
+          "details": "Extend the room service and WebSocket handlers to support spectator operations. Implement 'joinAsSpectator' and 'leaveAsSpectator' methods. Add logic to broadcast game state updates to spectators. Ensure spectators can't modify game state but receive all updates.",
+          "status": "pending",
+          "testStrategy": "Test spectator joining/leaving and verify they receive game updates but cannot modify game state."
+        },
+        {
+          "id": 6,
+          "title": "Implement Room Cleanup and Lifecycle Management",
+          "description": "Create mechanisms to handle room lifecycle including cleanup after game completion.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Implement a cleanup service that monitors room activity and handles stale rooms. Add methods to archive completed games and clean up Redis cache. Create a scheduled task to periodically check for abandoned rooms. Implement proper handling of disconnections and reconnections.",
+          "status": "pending",
+          "testStrategy": "Test cleanup logic with simulated game completions and abandoned rooms. Verify resources are properly released."
+        },
+        {
+          "id": 7,
+          "title": "Create Room Status Monitoring and Notifications",
+          "description": "Implement a system to monitor room status and notify users of changes.",
+          "dependencies": [
+            4,
+            5,
+            6
+          ],
+          "details": "Create a notification system for room events (player joined/left, game started/ended). Implement a room status dashboard for administrators. Add WebSocket events for broadcasting room status changes. Create metrics collection for room usage statistics.",
+          "status": "pending",
+          "testStrategy": "Test notification delivery for various room events. Verify admin dashboard displays accurate information about active rooms."
+        }
+      ]
     },
     {
       "id": 5,

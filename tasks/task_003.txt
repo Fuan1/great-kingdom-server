@@ -40,19 +40,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 6. Verify Redis synchronization for WebSocket state
 
 # Subtasks:
-## 1. Implement WebSocketGateway with Connection Handling [pending]
+## 1. Implement WebSocketGateway with Connection Handling [done]
 ### Dependencies: None
 ### Description: Create the WebSocketGateway class with basic connection and disconnection handling methods, and initialize the gateway.
 ### Details:
 Create a new file `game.gateway.ts` in the appropriate directory. Implement the WebSocketGateway class with the provided decorator configuration. Implement the OnGatewayInit, OnGatewayConnection, and OnGatewayDisconnect interfaces with their required methods. Log connection and disconnection events, and store the server instance in the afterInit method.
 
-## 2. Implement JWT Authentication for WebSocket Connections [pending]
+## 2. Implement JWT Authentication for WebSocket Connections [done]
 ### Dependencies: 3.1
 ### Description: Add JWT authentication to WebSocket connections to ensure only authenticated users can connect to the game namespace.
 ### Details:
 Modify the handleConnection method to extract the JWT token from the handshake query or headers. Create an authentication service or use an existing one to validate the token. If validation fails, disconnect the client with an appropriate error message. If validation succeeds, store the user information in the client's data for future reference.
 
-## 3. Create Connection Manager for Active Connections [pending]
+## 3. Create Connection Manager for Active Connections [done]
 ### Dependencies: 3.2
 ### Description: Implement a connection manager service to track active connections and associate them with user IDs.
 ### Details:

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 import axios from 'axios';
@@ -16,8 +16,13 @@ export class GoogleStrategy {
   }
 
   async getTokens(code: string) {
-    const { tokens } = await this.googleClient.getToken(code);
-    return tokens;
+    try {
+      const { tokens } = await this.googleClient.getToken(code);
+      return tokens;
+    } catch (error) {
+      Logger.error(error);
+      throw new UnauthorizedException('Failed to authenticate with Google');
+    }
   }
 
   async getUserInfo(accessToken: string) {
